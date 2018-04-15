@@ -1,3 +1,6 @@
-main.cppproj
-main.componentinfo.xml
-Debug/*
+
+\.idea/
+
+\.vs/
+
+main/Debug/*
