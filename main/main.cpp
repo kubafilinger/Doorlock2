@@ -3,6 +3,7 @@
 #include <avr/io.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "HD44780.c"
 #include "User.h"
 #include "Door.h"
 #include "Servo.h"
@@ -15,14 +16,21 @@
 void * operator new(size_t size);
 void operator delete(void * ptr);
 
+struct Menu {
+	uint8_t level;
+	uint8_t wait;
+	};
+
 int main(void)
 {
 	DDRB = (1 << LED_RED) | (1 << LED_GREEN) | (1 << SERVO_PIN) | (1 << G1);
 	PORTB = ~((1 << LED_RED) | (1 << LED_GREEN) | (1 << SERVO_PIN));
 	
-    User *kuba = new User;
+    User *user = new User;
 	Servo *servo = new Servo(SERVO_PIN);
 	Door *door = new Door(servo);
+	
+	LCD_Initalize();
 
 //logowanie
 /*
@@ -41,8 +49,33 @@ int main(void)
 	else 
 		PORTB |= (1 << LED_RED);
 
+	Menu menu;
+	menu.level = 0;
+	menu.wait = 0; // zabezpieczenie przed ciaglym ustawianiu wyswietlacza
+
     while (1) {
+		/*if(menu.level == 0 && !menu.wait) {
+			
+		} else if(menu.level == 1 && !menu.wait) {
+			
+		}*/
 		
+		if(user->isLogged() && !menu.wait) {
+			LCD_Clear();
+			LCD_Home();
+			LCD_WriteText("Witaj Kuba!"); // change Kuba to real user name
+			LCD_GoTo(1, 0);
+			
+			menu.wait = 1;
+			
+			// display menu
+		} else if(!menu.wait) {
+			LCD_Clear();
+			LCD_Home();
+			LCD_WriteText("Data:"); //todo: datatime display
+			
+			menu.wait = 1;
+		}
 	}
 }
 

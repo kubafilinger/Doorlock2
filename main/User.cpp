@@ -5,6 +5,7 @@ User::User()
 	this->id = 1;
 	this->name = "Kuba";
 	this->code = 1234;
+	this->logged = 0;
 }
 
 User::~User()
@@ -13,18 +14,18 @@ User::~User()
 
 /**
  * @param code
- * @return bool
+ * @return int
  */
-bool User::login(int code) {
+int User::login(int code) {
 	if(code == this->code) {
-		return 1;
+		this->logged = 1;
 	}
 	
-	return 0;
+	return this->isLogged();
 }
 
 void User::logout() {
-	
+	this->logged = 0;
 }
 
 void User::remove() {
@@ -53,4 +54,11 @@ char *User::getName() {
  */
 void User::setCode(int code) {
 	this->code = code;
+}
+
+/**
+ * @return int
+ */
+int User::isLogged() {
+	return this->logged;
 }
