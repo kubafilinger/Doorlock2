@@ -7,6 +7,7 @@
 #include "User.h"
 #include "Door.h"
 #include "Servo.h"
+#include "Keyboard.h"
 
 #define G1 PINB3
 #define LED_RED PINB1
@@ -29,6 +30,7 @@ int main(void)
     User *user = new User;
 	Servo *servo = new Servo(SERVO_PIN);
 	Door *door = new Door(servo);
+	Keyboard *keyboard = new Keyboard(&DDRD, &PORTD, &PIND);
 	
 	LCD_Initalize();
 
@@ -60,21 +62,37 @@ int main(void)
 			
 		}*/
 		
-		if(user->isLogged() && !menu.wait) {
-			LCD_Clear();
-			LCD_Home();
-			LCD_WriteText("Witaj Kuba!"); // change Kuba to real user name
-			LCD_GoTo(1, 0);
+		if(menu.wait) {
+			if(user->isLogged()) {
+				
+			} else {
+				LCD_WriteData(keyboard->getKey());
+				if(keyboard->catchKey() == 'D') {PORTB |= (1 << LED_GREEN);
+					switch(keyboard->getKey()) {
+						case 'OK':
+							user->login(1234);
+							menu.wait = 0;
+							break;
+					}
+				}
+			}
+		} else {
+			if(user->isLogged()) {
+				LCD_Clear();
+				LCD_Home();
+				LCD_WriteText("Witaj Kuba!"); // change Kuba to real user name
+				//LCD_GoTo(1, 0);
 			
-			menu.wait = 1;
+				menu.wait = 1;
 			
-			// display menu
-		} else if(!menu.wait) {
-			LCD_Clear();
-			LCD_Home();
-			LCD_WriteText("Data:"); //todo: datatime display
+				// display menu
+			} else {
+				LCD_Clear();
+				LCD_Home();
+				LCD_WriteText("Data:"); //todo: datatime display
 			
-			menu.wait = 1;
+				menu.wait = 1;
+			}
 		}
 	}
 }
