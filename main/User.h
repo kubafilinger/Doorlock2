@@ -5,19 +5,19 @@ class User
 {
 	int id;
 	char *name;
-	int code;
+	char *code;
 	int logged;
 	
 
 public:
 	User();
 	~User();
-	int login(int);
+	int login(char *);
 	void logout();
 	void remove();
 	void setName(char *);
 	char *getName();
-	void setCode(int);
+	void setCode(char *);
 	int isLogged();	
 };
 

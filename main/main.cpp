@@ -60,7 +60,7 @@ int main(void)
 	menu.level = 0;
 	menu.wait = 0; // zabezpieczenie przed ciaglym ustawianiu wyswietlacza
 
-	char code[MAX_CODE_LENGTH] = { '', '', '', '' };
+	char *code = "";
 	int code_pos = 0;
 
     while (1) {
@@ -74,25 +74,23 @@ int main(void)
 					switch(key) {
 						case ENTER:
 							LCD_Clear();
-							LCD_WriteText("Enter");
+							LCD_WriteText(code);
 							
-							user->login(code);
-							//menu.wait = 0;
+							if(user->login(code)) {
+								menu.wait = 0;
+							}
+							
+							code_pos = 0;
+							code = "";
 							
 							//todo: check pin
-							break;
-						case UP:
-							LCD_Clear();
-							LCD_WriteText("up");
-							break;
-						
-						case DOWN:
-							LCD_Clear();
-							LCD_WriteText("down");
 							break;
 						case BACK:
 							LCD_Clear();
 							LCD_WriteText("back");
+							
+							code_pos = 0;
+							code = "";
 							
 							//todo: reset pin
 							break;
@@ -112,7 +110,10 @@ int main(void)
 			if(user->isLogged()) {
 				LCD_Clear();
 				LCD_Home();
-				LCD_WriteText("Witaj Kuba!"); // change Kuba to real user name
+				char txt[200];
+				sprintf(txt, "Witaj %s", user->getName());
+				
+				LCD_WriteText(txt);
 				//LCD_GoTo(1, 0);
 			
 				menu.wait = 1;

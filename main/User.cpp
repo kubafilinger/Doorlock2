@@ -3,8 +3,8 @@
 User::User()
 {
 	this->id = 1;
-	this->name = "Kuba";
-	this->code = 1234;
+	this->name = "Kubas";
+	this->code = "1234";
 	this->logged = 0;
 }
 
@@ -16,8 +16,8 @@ User::~User()
  * @param code
  * @return int
  */
-int User::login(int code) {
-	if(code == this->code) {
+int User::login(char *code) {
+	if(*code == *(this->code)) {
 		this->logged = 1;
 	}
 	
@@ -52,7 +52,7 @@ char *User::getName() {
 /**
  * @param code
  */
-void User::setCode(int code) {
+void User::setCode(char *code) {
 	this->code = code;
 }
 
