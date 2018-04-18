@@ -13,6 +13,11 @@
 #define LED_RED PINB1
 #define LED_GREEN PINB2
 #define SERVO_PIN PINB0
+#define UP 'A'
+#define DOWN 'B'
+#define BACK 'C'
+#define ENTER 'D'
+#define MAX_CODE_LENGTH 4
 
 void * operator new(size_t size);
 void operator delete(void * ptr);
@@ -30,7 +35,7 @@ int main(void)
     User *user = new User;
 	Servo *servo = new Servo(SERVO_PIN);
 	Door *door = new Door(servo);
-	Keyboard *keyboard = new Keyboard(&DDRD, &PORTD, &PIND);
+	Keyboard *keyboard = new Keyboard(&DDRC, &PORTC, &PINC);
 	
 	LCD_Initalize();
 
@@ -55,23 +60,50 @@ int main(void)
 	menu.level = 0;
 	menu.wait = 0; // zabezpieczenie przed ciaglym ustawianiu wyswietlacza
 
+	char code[MAX_CODE_LENGTH] = { '', '', '', '' };
+	int code_pos = 0;
+
     while (1) {
-		/*if(menu.level == 0 && !menu.wait) {
-			
-		} else if(menu.level == 1 && !menu.wait) {
-			
-		}*/
-		
 		if(menu.wait) {
 			if(user->isLogged()) {
 				
 			} else {
-				LCD_WriteData(keyboard->getKey());
-				if(keyboard->catchKey() == 'D') {PORTB |= (1 << LED_GREEN);
-					switch(keyboard->getKey()) {
-						case 'OK':
-							user->login(1234);
-							menu.wait = 0;
+				if(keyboard->catchKey()) {
+					char key = keyboard->getKey();
+					
+					switch(key) {
+						case ENTER:
+							LCD_Clear();
+							LCD_WriteText("Enter");
+							
+							user->login(code);
+							//menu.wait = 0;
+							
+							//todo: check pin
+							break;
+						case UP:
+							LCD_Clear();
+							LCD_WriteText("up");
+							break;
+						
+						case DOWN:
+							LCD_Clear();
+							LCD_WriteText("down");
+							break;
+						case BACK:
+							LCD_Clear();
+							LCD_WriteText("back");
+							
+							//todo: reset pin
+							break;
+						default:
+							LCD_Clear();
+							LCD_WriteText("cyfra");
+							
+							if(code_pos < MAX_CODE_LENGTH) {
+								code[code_pos++] = key;
+							}
+							
 							break;
 					}
 				}

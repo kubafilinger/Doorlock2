@@ -1,17 +1,25 @@
 #ifndef __KEYBOARD_H__
 #define __KEYBOARD_H__
+#define F_CPU 8000000L
+#define UP 'A'
+#define DOWN 'B'
+#define BACK 'C'
+#define ENTER 'D'
 
 #include <util/delay.h>
 
 class Keyboard
 {
+public:
+	const char up = 'A';
+	const char down = 'B';
+	const char back = 'C';
+	const char enter = 'D';
+	
+private:
 	volatile uint8_t *ddr;
 	volatile uint8_t *port;
 	volatile uint8_t *pin;
-	char up;
-	char down;
-	char back;
-	char enter;
 	char key;
 	char keyboard[4][4] = {
 		{'1', '2', '3', 'A'},
@@ -28,4 +36,4 @@ public:
 	void setKey(char);
 };
 
-#endif //__KEYBOARD_H__
+#endif __KEYBOARD_H__
