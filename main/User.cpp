@@ -17,8 +17,14 @@ User::~User()
  * @return int
  */
 int User::login(char *code) {
-	if(*code == *(this->code)) {
-		this->logged = 1;
+	int size = sizeof(this->code) / sizeof(*(this->code));
+	
+	for(unsigned i = 0; i < size; i++) {
+		if(code[i] != (this->code)[i])
+			break;
+			
+		if(i + 1 == size)
+			this->logged = 1;
 	}
 	
 	return this->isLogged();

@@ -1,14 +1,4 @@
 #define F_CPU 8000000L
-
-#include <avr/io.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include "HD44780.c"
-#include "User.h"
-#include "Door.h"
-#include "Servo.h"
-#include "Keyboard.h"
-
 #define G1 PINB3
 #define LED_RED PINB1
 #define LED_GREEN PINB2
@@ -18,6 +8,15 @@
 #define BACK 'C'
 #define ENTER 'D'
 #define MAX_CODE_LENGTH 4
+
+#include <avr/io.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include "HD44780.c"
+#include "User.h"
+#include "Door.h"
+#include "Servo.h"
+#include "Keyboard.h"
 
 void * operator new(size_t size);
 void operator delete(void * ptr);
@@ -72,33 +71,22 @@ int main(void)
 					char key = keyboard->getKey();
 					
 					switch(key) {
-						case ENTER:
-							LCD_Clear();
-							LCD_WriteText(code);
-							
-							if(user->login(code)) {
-								menu.wait = 0;
-							}
-							
+						case ENTER:							
+							user->login(code);
 							code_pos = 0;
 							code = "";
-							
-							//todo: check pin
+							menu.wait = 0;
+
 							break;
 						case BACK:
-							LCD_Clear();
-							LCD_WriteText("back");
-							
 							code_pos = 0;
 							code = "";
-							
-							//todo: reset pin
+							menu.wait = 0;
+						
 							break;
 						default:
-							LCD_Clear();
-							LCD_WriteText("cyfra");
-							
 							if(code_pos < MAX_CODE_LENGTH) {
+								LCD_WriteData('*');
 								code[code_pos++] = key;
 							}
 							
@@ -114,16 +102,15 @@ int main(void)
 				sprintf(txt, "Witaj %s", user->getName());
 				
 				LCD_WriteText(txt);
-				//LCD_GoTo(1, 0);
 			
 				menu.wait = 1;
 			
-				// display menu
+				//todo: display menu
 			} else {
 				LCD_Clear();
 				LCD_Home();
-				LCD_WriteText("Data:"); //todo: datatime display
-			
+				LCD_WriteText("PIN:"); //todo: datatime display
+				LCD_GoTo(5, 0);
 				menu.wait = 1;
 			}
 		}
