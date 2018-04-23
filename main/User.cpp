@@ -6,6 +6,7 @@ User::User()
 	this->name = "Kubas";
 	this->code = "1234";
 	this->logged = 0;
+	this->role = SUPER_ADMIN;
 }
 
 User::~User()
@@ -67,4 +68,12 @@ void User::setCode(char *code) {
  */
 int User::isLogged() {
 	return this->logged;
+}
+
+Role User::getRole() {
+	return this->role;
+}
+
+void User::setRole(Role role) {
+	this->role = role;
 }
