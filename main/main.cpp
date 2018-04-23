@@ -138,16 +138,26 @@ int main(void)
 			}
 		} else if(state == DISPLAY) { // display information
 			if(user->isLogged()) {
-				char txt[200];
-				sprintf(txt, "Witaj %s", user->getName());
-				
 				LCD_Clear();
 				LCD_Home();
-				LCD_WriteText(txt);
-				LCD_GoTo(0, 1);
-				//LCD_WriteText(static_cast<char>(mainMenu.pos + 48));
-				LCD_WriteText(mainMenu.lang[mainMenu.pos]);
-			
+				
+				if(mainMenu.choose == NO_OPTIONS) {
+					char txt[200];
+					sprintf(txt, "Witaj %s", user->getName());
+				
+					LCD_WriteText(txt);
+					LCD_GoTo(0, 1);
+					//LCD_WriteText(static_cast<char>(mainMenu.pos + 48));
+					LCD_WriteText(mainMenu.lang[mainMenu.pos]);
+				} else if(mainMenu.choose == ADD_USER) {
+					char txt[200];
+					sprintf(txt, "<- %s", mainMenu.lang[mainMenu.pos]);
+
+					LCD_WriteText("<- Dodaj usera");
+					LCD_GoTo(0, 1);
+					LCD_WriteText("Nazwa: ");
+				}
+				
 				PORTB |= 1 << LED_GREEN;
 				PORTB &= ~(1 << LED_RED);
 				
