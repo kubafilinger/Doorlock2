@@ -17,6 +17,7 @@
 #include "Door.h"
 #include "Servo.h"
 #include "Keyboard.h"
+#include "Menu.h"
 
 void * operator new(size_t size);
 void operator delete(void * ptr);
@@ -24,20 +25,6 @@ void operator delete(void * ptr);
 enum States {
 	DISPLAY,
 	WAIT
-};
-
-enum Values {
-	NO_OPTIONS,
-	CHANGE_CODE,
-	CHANGE_DATE,
-	ADD_USER
-};
-
-struct Menu {
-	Values fields[3] = { ADD_USER, CHANGE_DATE, CHANGE_CODE };
-	char *lang[3] = { "1. Dodaj usera", "2. Zmien date", "3. Zmien pin" };
-	uint8_t pos;
-	Values choose = NO_OPTIONS;
 };
 
 struct Code {
@@ -69,11 +56,10 @@ int main(void)
 	
 	States state = DISPLAY;
 	Code enteredCode;
-	Menu mainMenu;
+	Menu *mainMenu = new Menu();
 	
 	enteredCode.code = "";
 	enteredCode.pos = 0;
-	mainMenu.pos = 0;
 
     while (1) {
 		if(state == WAIT) { // wait for user interaction
@@ -83,29 +69,30 @@ int main(void)
 				if(user->isLogged()) {
 					switch(key) {
 						case UP: // up in menu
-							if(mainMenu.pos > 0) mainMenu.pos--;
+							mainMenu->levelUp();
 								
 							state = DISPLAY;
 							break;
 						
 						case DOWN: // down in menu
-							if(mainMenu.pos + 1 < sizeof(mainMenu.fields)/sizeof(*mainMenu.fields)) mainMenu.pos++;
+							mainMenu->levelDown();
 								
 							state = DISPLAY;
 							break;
 						
 						case BACK: // back in menu and cancel operation
-							if(mainMenu.choose == NO_OPTIONS) { // you have not selected any menu fiels
+							if(mainMenu->getChoose() == NO_OPTIONS) { // you have not selected any menu fiels
 								user->logout();
 							}
 							else {
-								mainMenu.choose = NO_OPTIONS;
+								mainMenu->setChoose(NO_OPTIONS);
 							}
 							
+							state = DISPLAY;
 							break;
 							
 						case ENTER: // go to in or apply operation
-							mainMenu.choose = mainMenu.fields[mainMenu.pos];
+							mainMenu->setChoose(mainMenu->getField());
 							
 							state = DISPLAY;
 							break;
@@ -141,17 +128,17 @@ int main(void)
 				LCD_Clear();
 				LCD_Home();
 				
-				if(mainMenu.choose == NO_OPTIONS) {
+				if(mainMenu->getChoose() == NO_OPTIONS) {
 					char txt[200];
 					sprintf(txt, "Witaj %s", user->getName());
 				
 					LCD_WriteText(txt);
 					LCD_GoTo(0, 1);
 					//LCD_WriteText(static_cast<char>(mainMenu.pos + 48));
-					LCD_WriteText(mainMenu.lang[mainMenu.pos]);
-				} else if(mainMenu.choose == ADD_USER) {
+					LCD_WriteText(mainMenu->getLang());
+				} else if(mainMenu->getChoose() == ADD_USER) {
 					char txt[200];
-					sprintf(txt, "<- %s", mainMenu.lang[mainMenu.pos]);
+					sprintf(txt, "<- %s", mainMenu->getLang());
 
 					LCD_WriteText("<- Dodaj usera");
 					LCD_GoTo(0, 1);

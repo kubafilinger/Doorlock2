@@ -256,6 +256,12 @@
     <Compile Include="main.cpp">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="Menu.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Menu.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="Servo.cpp">
       <SubType>compile</SubType>
     </Compile>
