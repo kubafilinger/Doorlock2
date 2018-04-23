@@ -21,10 +21,29 @@
 void * operator new(size_t size);
 void operator delete(void * ptr);
 
+enum States {
+	DISPLAY,
+	WAIT
+};
+
+enum Values {
+	NO_OPTIONS,
+	CHANGE_CODE,
+	CHANGE_DATE,
+	ADD_USER
+};
+
 struct Menu {
-	uint8_t level;
-	uint8_t wait;
-	};
+	Values fields[3] = { ADD_USER, CHANGE_DATE, CHANGE_CODE };
+	char *lang[3] = { "1. Dodaj usera", "2. Zmien date", "3. Zmien pin" };
+	uint8_t pos;
+	Values choose = NO_OPTIONS;
+};
+
+struct Code {
+	char *code;
+	uint8_t pos;	
+};
 
 int main(void)
 {
@@ -38,72 +57,101 @@ int main(void)
 	
 	LCD_Initalize();
 
-//logowanie
-/*
-    if(kuba->login(1234)) {
-		PORTB |= (1 << LED_GREEN);
-    } else {
-		PORTB |= (1 << LED_RED);
-	}
-	*/
 
 // test otwierania drzwi
 	//door->open();
-	
+	/*
 	if(servo->getPosition() == 160)
 		PORTB |= (1 << LED_GREEN);
 	else 
 		PORTB |= (1 << LED_RED);
-
-	Menu menu;
-	menu.level = 0;
-	menu.wait = 0; // zabezpieczenie przed ciaglym ustawianiu wyswietlacza
-
-	char *code = "";
-	int code_pos = 0;
+*/
+	
+	States state = DISPLAY;
+	Code enteredCode;
+	Menu mainMenu;
+	
+	enteredCode.code = "";
+	enteredCode.pos = 0;
+	mainMenu.pos = 0;
 
     while (1) {
-		if(menu.wait) {
-			if(user->isLogged()) {
+		if(state == WAIT) { // wait for user interaction
+			if(keyboard->catchKey()) {
+				char key = keyboard->getKey();
 				
-			} else {
-				if(keyboard->catchKey()) {
-					char key = keyboard->getKey();
-					
+				if(user->isLogged()) {
 					switch(key) {
-						case ENTER:							
-							user->login(code);
-							code_pos = 0;
-							code = "";
-							menu.wait = 0;
-
+						case UP: // up in menu
+							if(mainMenu.pos > 0) mainMenu.pos--;
+								
+							state = DISPLAY;
 							break;
-						case BACK:
-							code_pos = 0;
-							code = "";
-							menu.wait = 0;
 						
+						case DOWN: // down in menu
+							if(mainMenu.pos + 1 < sizeof(mainMenu.fields)/sizeof(*mainMenu.fields)) mainMenu.pos++;
+								
+							state = DISPLAY;
 							break;
-						default:
-							if(code_pos < MAX_CODE_LENGTH) {
-								LCD_WriteData('*');
-								code[code_pos++] = key;
+						
+						case BACK: // back in menu and cancel operation
+							if(mainMenu.choose == NO_OPTIONS) { // you have not selected any menu fiels
+								user->logout();
+							}
+							else {
+								mainMenu.choose = NO_OPTIONS;
 							}
 							
 							break;
+							
+						case ENTER: // go to in or apply operation
+							mainMenu.choose = mainMenu.fields[mainMenu.pos];
+							
+							state = DISPLAY;
+							break;
+					
+						default:
+							break;
+					}
+				} else {
+					switch(key) {
+						case BACK:
+							enteredCode.pos = 0;
+							enteredCode.code = "";
+							state = DISPLAY;
+							break;
+							
+						case ENTER:
+							user->login(enteredCode.code);
+							enteredCode.pos = 0;
+							enteredCode.code = "";
+							state = DISPLAY;
+							break;
+							
+						default:
+							if(enteredCode.pos < MAX_CODE_LENGTH) {
+								LCD_WriteData('*');
+								enteredCode.code[enteredCode.pos++] = key;
+							}
 					}
 				}
 			}
-		} else {
+		} else if(state == DISPLAY) { // display information
 			if(user->isLogged()) {
-				LCD_Clear();
-				LCD_Home();
 				char txt[200];
 				sprintf(txt, "Witaj %s", user->getName());
 				
+				LCD_Clear();
+				LCD_Home();
 				LCD_WriteText(txt);
+				LCD_GoTo(0, 1);
+				//LCD_WriteText(static_cast<char>(mainMenu.pos + 48));
+				LCD_WriteText(mainMenu.lang[mainMenu.pos]);
 			
-				menu.wait = 1;
+				PORTB |= 1 << LED_GREEN;
+				PORTB &= ~(1 << LED_RED);
+				
+				state = WAIT;
 			
 				//todo: display menu
 			} else {
@@ -111,7 +159,11 @@ int main(void)
 				LCD_Home();
 				LCD_WriteText("PIN:"); //todo: datatime display
 				LCD_GoTo(5, 0);
-				menu.wait = 1;
+				
+				PORTB |= 1 << LED_RED;
+				PORTB &= ~(1 << LED_GREEN);
+				
+				state = WAIT;
 			}
 		}
 	}

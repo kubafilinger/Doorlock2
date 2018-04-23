@@ -1,7 +1,7 @@
 #ifndef __USER_H__
 #define __USER_H__
 
-enum Role = {
+enum Roles {
 	SUPER_ADMIN,
 	USER
 };
@@ -12,7 +12,7 @@ class User
 	char *name;
 	char *code;
 	int logged;
-	Role role; 	
+	Roles role; 	
 
 public:
 	User();
@@ -24,8 +24,8 @@ public:
 	char *getName();
 	void setCode(char *);
 	int isLogged();
-	Role getRole();
-	void setRole(Role)
+	Roles getRole();
+	void setRole(Roles);
 };
 
 #endif //__USER_H__

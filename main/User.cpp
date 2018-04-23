@@ -70,10 +70,10 @@ int User::isLogged() {
 	return this->logged;
 }
 
-Role User::getRole() {
+Roles User::getRole() {
 	return this->role;
 }
 
-void User::setRole(Role role) {
+void User::setRole(Roles role) {
 	this->role = role;
 }
