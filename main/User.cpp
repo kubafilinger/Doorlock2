@@ -3,8 +3,9 @@
 User::User()
 {
 	this->id = 1;
-	this->name = "Kuba";
-	this->code = 1234;
+	this->name = "Kubas";
+	this->code = "1234";
+	this->logged = 0;
 }
 
 User::~User()
@@ -13,18 +14,24 @@ User::~User()
 
 /**
  * @param code
- * @return bool
+ * @return int
  */
-bool User::login(int code) {
-	if(code == this->code) {
-		return 1;
+int User::login(char *code) {
+	int size = sizeof(this->code) / sizeof(*(this->code));
+	
+	for(unsigned i = 0; i < size; i++) {
+		if(code[i] != (this->code)[i])
+			break;
+			
+		if(i + 1 == size)
+			this->logged = 1;
 	}
 	
-	return 0;
+	return this->isLogged();
 }
 
 void User::logout() {
-	
+	this->logged = 0;
 }
 
 void User::remove() {
@@ -51,6 +58,13 @@ char *User::getName() {
 /**
  * @param code
  */
-void User::setCode(int code) {
+void User::setCode(char *code) {
 	this->code = code;
+}
+
+/**
+ * @return int
+ */
+int User::isLogged() {
+	return this->logged;
 }
