@@ -77,3 +77,7 @@ Roles User::getRole() {
 void User::setRole(Roles role) {
 	this->role = role;
 }
+
+void User::save() {
+	
+}

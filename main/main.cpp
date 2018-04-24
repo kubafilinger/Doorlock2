@@ -10,6 +10,7 @@
 #define MAX_CODE_LENGTH 4
 
 #include <avr/io.h>
+#include <avr/eeprom.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "HD44780.c"
@@ -31,6 +32,8 @@ struct Code {
 	char *code;
 	uint8_t pos;	
 };
+
+EEMEM uint8_t test;
 
 int main(void)
 {
@@ -57,6 +60,8 @@ int main(void)
 	States state = DISPLAY;
 	Code enteredCode;
 	Menu *mainMenu = new Menu();
+	
+	//eeprom_write_byte(&test, 2);
 	
 	enteredCode.code = "";
 	enteredCode.pos = 0;
@@ -119,6 +124,7 @@ int main(void)
 							if(enteredCode.pos < MAX_CODE_LENGTH) {
 								LCD_WriteData('*');
 								enteredCode.code[enteredCode.pos++] = key;
+								eeprom_update_byte(&test, key - 48);
 							}
 					}
 				}
@@ -155,6 +161,8 @@ int main(void)
 				LCD_Clear();
 				LCD_Home();
 				LCD_WriteText("PIN:"); //todo: datatime display
+				LCD_GoTo(0, 1);
+				LCD_WriteData(eeprom_read_byte(&test) + 48);
 				LCD_GoTo(5, 0);
 				
 				PORTB |= 1 << LED_RED;

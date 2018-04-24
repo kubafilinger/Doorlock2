@@ -26,6 +26,7 @@ public:
 	int isLogged();
 	Roles getRole();
 	void setRole(Roles);
+	void save();
 };
 
 #endif //__USER_H__
