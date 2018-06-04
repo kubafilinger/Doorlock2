@@ -235,6 +235,9 @@
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="consts.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="Door.cpp">
       <SubType>compile</SubType>
     </Compile>
@@ -245,6 +248,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="HD44780.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="helpers.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="helpers.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Keyboard.cpp">
