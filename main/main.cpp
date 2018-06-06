@@ -3,6 +3,7 @@
 #include <avr/eeprom.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "HD44780.c"
 #include "helpers.h"
 #include "User.h"
@@ -16,25 +17,22 @@ enum States {
 	WAIT
 };
 
-struct Code {
-	char *code;
-	uint8_t pos;
-};
+EEMEM char stringUsers[SMALL_BUFFER_SIZE	];
 
-EEMEM uint8_t test;
+User* users[MAX_NUM_OF_USERS];
+uint8_t usersIndex = 0;
 
 int main(void)
 {
 	DDRB = (1 << LED_RED) | (1 << LED_GREEN) | (1 << SERVO_PIN) | (1 << G1);
 	PORTB = ~((1 << LED_RED) | (1 << LED_GREEN) | (1 << SERVO_PIN));
 
-    User *user = new User;
+	User *loggedUser = NULL;
 	Servo *servo = new Servo(SERVO_PIN);
 	Door *door = new Door(servo);
 	Keyboard *keyboard = new Keyboard(&DDRC, &PORTC, &PINC);
 
 	LCD_Initalize();
-
 
 // test otwierania drzwi
 	//door->open();
@@ -46,20 +44,39 @@ int main(void)
 */
 
 	States state = DISPLAY;
-	Code enteredCode;
 	Menu *mainMenu = new Menu();
 
-	//eeprom_write_byte(&test, 2);
+	char buffor[SMALL_BUFFER_SIZE];
+	char* tmpBuff = new char[SMALL_BUFFER_SIZE]; // todo: jakos inaczej to rozwiazac, bo ja juz nie bede potrzebowal tej zmiennej po odczytaniu userow
+	uint8_t buffIndex = 0, tmpBuffIndex = 0;
 
-	enteredCode.code = "";
-	enteredCode.pos = 0;
+	eeprom_read_block(buffor, stringUsers, sizeof(stringUsers));
+
+	for(char* serial = buffor; *serial; ++serial) {
+		if(*serial == ';') {
+			tmpBuff[tmpBuffIndex++] = '\0';
+
+			users[usersIndex++] = new User(tmpBuff);
+
+			tmpBuffIndex = 0;
+		} else {
+			tmpBuff[tmpBuffIndex++] = *serial;
+		}
+	}
+
+	delete tmpBuff; // czy nie trzeba przypadkiem delete []tempBuff
+
+	//todo: zczytanie z pamieci EEPROM zserializowanych userow i zapisanie ich do tablicy
+	users[usersIndex++] = new User();
+	(users[usersIndex - 1])->setCode("5555");
+	(users[usersIndex - 1])->setName("Kubiszon");
 
     while (1) {
 		if(state == WAIT) { // wait for user interaction
 			if(keyboard->catchKey()) {
 				char key = keyboard->getKey();
 
-				if(user->isLogged()) {
+				if(loggedUser != NULL && loggedUser->isLogged()) {
 					switch(key) {
 						case UP: // up in menu
 							mainMenu->levelUp();
@@ -75,7 +92,7 @@ int main(void)
 
 						case BACK: // back in menu and cancel operation
 							if(mainMenu->getChoose() == NO_OPTIONS) { // you have not selected any menu fiels
-								user->logout();
+								loggedUser->logout();
 							}
 							else {
 								mainMenu->setChoose(NO_OPTIONS);
@@ -87,44 +104,91 @@ int main(void)
 						case ENTER: // go to in or apply operation
 							mainMenu->setChoose(mainMenu->getField());
 
+							if(mainMenu->getChoose() == ADD_USER && buffIndex == MAX_CODE_LENGTH) {
+								/*
+									todo: wprowadzenie oraz sprawdzenie unikalnosci kodu i zapisanie do eeprom usera
+								*/
+
+								User *newUser = new User();
+								users[usersIndex++] = newUser;
+
+								newUser->setCode(buffor);
+								newUser->setName("oczek");
+
+								for(int i = 0; i < usersIndex; i++) {
+									char serializedUser[SMALL_BUFFER_SIZE];
+
+									users[i]->toString(serializedUser);
+
+									strcat(buffor, serializedUser);
+									strcat(buffor, ";");
+								}
+
+								eeprom_write_block(buffor, stringUsers, sizeof(buffor));
+
+								LCD_Clear();
+								LCD_WriteText(newUser->getName());
+							} else if(mainMenu->getChoose() == LOGOUT) {
+								loggedUser->logout();
+								mainMenu->reset();
+							}
+
+							// always clear buffor after entered action
+							buffIndex = 0;
+
 							state = DISPLAY;
 							break;
 
 						default:
+							if(mainMenu->getChoose() == ADD_USER) {
+								if(buffIndex < MAX_CODE_LENGTH) {
+									LCD_WriteData('*');
+									buffor[buffIndex++] = key;
+								}
+							} else {
+								buffor[buffIndex++] = key;
+							}
+
+							buffor[buffIndex] = '\0';
+
 							break;
 					}
 				} else {
 					switch(key) {
 						case BACK:
-							enteredCode.pos = 0;
-							enteredCode.code = "";
+							buffIndex = 0;
 							state = DISPLAY;
 							break;
 
 						case ENTER:
-							user->login(enteredCode.code);
-							enteredCode.pos = 0;
-							enteredCode.code = "";
+							for(int i = 0; i < usersIndex; i++) {
+								if(users[i]->login(buffor)) {
+									loggedUser = users[i];
+								}
+							}
+
+							buffIndex = 0;
 							state = DISPLAY;
 							break;
 
 						default:
-							if(enteredCode.pos < MAX_CODE_LENGTH) {
+							if(buffIndex < MAX_CODE_LENGTH) {
 								LCD_WriteData('*');
-								enteredCode.code[enteredCode.pos++] = key;
-								eeprom_update_byte(&test, key - 48);
+								buffor[buffIndex++] = key;
 							}
+
+							buffor[buffIndex] = '\0';
 					}
 				}
 			}
 		} else if(state == DISPLAY) { // display information
-			if(user->isLogged()) {
+			if(loggedUser != NULL && loggedUser->isLogged()) {
 				LCD_Clear();
 				LCD_Home();
 
 				if(mainMenu->getChoose() == NO_OPTIONS) {
 					char txt[200];
-					sprintf(txt, "Witaj %s", user->getName());
+					sprintf(txt, "Witaj %s", loggedUser->getName());
 
 					LCD_WriteText(txt);
 					LCD_GoTo(0, 1);
@@ -136,13 +200,7 @@ int main(void)
 
 					LCD_WriteText("<- Dodaj usera");
 					LCD_GoTo(0, 1);
-					LCD_WriteText("Kod: ");
-
-					/*
-					todo: wprowadzenie kodu i zapisanie do eeprom usera
-					*/
-
-
+					LCD_WriteText("Kod:");
 				}
 
 				PORTB |= 1 << LED_GREEN;
@@ -156,8 +214,6 @@ int main(void)
 				LCD_Home();
 				LCD_WriteText("PIN:"); //todo: datatime display
 				LCD_GoTo(0, 1);
-				LCD_WriteData(eeprom_read_byte(&test) + 48);
-				LCD_GoTo(5, 0);
 				//char txt[200];
 				//sprintf(txt, "%d %d %d", sizeof(User), sizeof(Keyboard) ,sizeof(Door));
 				//LCD_WriteText(txt);

@@ -24,6 +24,7 @@
  */
 #define BUFFER_SIZE 512
 #define SMALL_BUFFER_SIZE 256
+#define MAX_NUM_OF_USERS 10
 
 /**
  * Validator
