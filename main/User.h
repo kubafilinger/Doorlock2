@@ -3,8 +3,7 @@
 
 enum Roles {
 	SUPER_ADMIN,
-	USER,
-	LOL
+	USER
 };
 
 class User

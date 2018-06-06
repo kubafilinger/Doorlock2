@@ -16,7 +16,7 @@ class Menu
 	int position;
 	Values choose;
 
-public:
+	public:
 	Menu();
 	~Menu();
 	int countFields();
