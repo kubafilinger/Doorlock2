@@ -23,7 +23,7 @@ Values Menu::getChoose() {
 }
 
 char *Menu::getLang() {
-	return this->langs[this->position]; 
+	return this->langs[this->position];
 }
 
 int Menu::getPostion() {
@@ -40,4 +40,9 @@ int Menu::levelDown() {
 
 Values Menu::getField() {
 	return this->fields[this->position];
+}
+
+void Menu::reset() {
+	this->choose = NO_OPTIONS;
+	this->position = 0;
 }
