@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "HD44780.c"
+#include "usart.h"
 #include "helpers.h"
 #include "User.h"
 #include "Door.h"
@@ -33,6 +34,9 @@ int main(void)
 	Keyboard *keyboard = new Keyboard(&DDRC, &PORTC, &PINC);
 
 	LCD_Initalize();
+	usartInit();
+
+	sei();
 
 // test otwierania drzwi
 	//door->open();
@@ -176,6 +180,8 @@ int main(void)
 								LCD_WriteData('*');
 								buffor[buffIndex++] = key;
 							}
+
+							send("test uasrt");
 
 							buffor[buffIndex] = '\0';
 					}

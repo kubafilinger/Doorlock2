@@ -133,9 +133,6 @@ char *User::getStringRole() {
 		case SUPER_ADMIN:
 			result = "SUPER_ADMIN";
 			break;
-		case LOL:
-			result = "LOL";
-			break;
 		default:
 			result = "";
 	}
