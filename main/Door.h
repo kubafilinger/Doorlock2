@@ -10,7 +10,7 @@ class Door
 	bool lock; // lock or unlock
 
 public:
-	Door(Servo *);
+	Door(Servo*);
 	~Door();
 	void open();
 	void close();

@@ -5,17 +5,18 @@ enum Values {
 	NO_OPTIONS,
 	CHANGE_CODE,
 	CHANGE_DATE,
-	ADD_USER
+	ADD_USER,
+	LOGOUT
 };
 
 class Menu
 {
-	Values fields[3] = { ADD_USER, CHANGE_DATE, CHANGE_CODE };
-	char *langs[3] = { "1. Dodaj usera", "2. Zmien date", "3. Zmien pin" };
+	Values fields[4] = { ADD_USER, CHANGE_DATE, CHANGE_CODE, LOGOUT };
+	char *langs[4] = { "1. Dodaj usera", "2. Zmien date", "3. Zmien pin", "4. Wyloguj sie" };
 	int position;
 	Values choose;
 
-public:
+	public:
 	Menu();
 	~Menu();
 	int countFields();
@@ -26,6 +27,7 @@ public:
 	char *getLang();
 	int levelUp();
 	int levelDown();
+	void reset();
 };
 
 #endif //__MENU_H__

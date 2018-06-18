@@ -1,5 +1,10 @@
 #include "Keyboard.h"
 
+/**
+ * @param ddr
+ * @param port
+ * @param pin
+ */
 Keyboard::Keyboard(volatile uint8_t * ddr, volatile uint8_t * port, volatile uint8_t * pin) {
 	this->ddr = ddr;
 	this->port = port;
@@ -13,6 +18,9 @@ Keyboard::Keyboard(volatile uint8_t * ddr, volatile uint8_t * port, volatile uin
 Keyboard::~Keyboard() {
 }
 
+/**
+ * @return char
+ */
 char Keyboard::catchKey() {
 	int i, j;
 	
@@ -42,10 +50,16 @@ char Keyboard::catchKey() {
 	return 0;
 }
 
+/**
+ * @param char key
+ */
 void Keyboard::setKey(char key) {
 	this->key = key;
 }
 
+/**
+ * @return char
+ */
 char Keyboard::getKey() {
 	return this->key;
 }

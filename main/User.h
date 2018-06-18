@@ -12,20 +12,25 @@ class User
 	char *name;
 	char *code;
 	int logged;
-	Roles role; 	
+	Roles role;
 
-public:
+	public:
 	User();
+	User(char *);
 	~User();
 	int login(char *);
 	void logout();
-	void remove();
 	void setName(char *);
 	char *getName();
+	char *getCode();
 	void setCode(char *);
 	int isLogged();
 	Roles getRole();
+	char *getStringRole();
+	void setStringRole(char *);
 	void setRole(Roles);
+	char *toString(char *);
+	int getId();
 };
 
 #endif //__USER_H__
