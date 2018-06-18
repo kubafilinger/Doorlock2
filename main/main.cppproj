@@ -277,12 +277,6 @@
     <Compile Include="Servo.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="usart.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="usart.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="User.cpp">
       <SubType>compile</SubType>
     </Compile>

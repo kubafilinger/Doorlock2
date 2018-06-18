@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "HD44780.c"
-#include "usart.h"
 #include "helpers.h"
 #include "User.h"
 #include "Door.h"

@@ -1,5 +1,5 @@
-#ifndef USART_H_
-#define USART_H_
+#ifndef __USART_H__
+#define __USART_H__
 
 #ifndef F_CPU
 #define F_CPU 8000000L
@@ -30,4 +30,4 @@ Synchronous: (1 << UMSEL)
 void usartInit();
 void send(char*);
 
-#endif
+#endif //__USART_H__
