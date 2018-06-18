@@ -22,6 +22,9 @@ EEMEM char stringUsers[SMALL_BUFFER_SIZE	];
 User* users[MAX_NUM_OF_USERS];
 uint8_t usersIndex = 0;
 
+void readUsersFromEeprom();
+void writeUsersToEeprom();
+
 int main(void)
 {
 	DDRB = (1 << LED_RED) | (1 << LED_GREEN) | (1 << SERVO_PIN) | (1 << G1);
@@ -31,48 +34,29 @@ int main(void)
 	Servo *servo = new Servo(SERVO_PIN);
 	Door *door = new Door(servo);
 	Keyboard *keyboard = new Keyboard(&DDRC, &PORTC, &PINC);
+	States state = DISPLAY;
+	Menu *mainMenu = new Menu();
+
+	char buffor[SMALL_BUFFER_SIZE];
+	uint8_t buffIndex = 0;
 
 	LCD_Initalize();
-	usartInit();
 
-	sei();
-
-// test otwierania drzwi
+	// test otwierania drzwi
 	//door->open();
 	/*
 	if(servo->getPosition() == 160)
 		PORTB |= (1 << LED_GREEN);
 	else
 		PORTB |= (1 << LED_RED);
-*/
+	*/
 
-	States state = DISPLAY;
-	Menu *mainMenu = new Menu();
+	//readUsersFromEeprom();
 
-	char buffor[SMALL_BUFFER_SIZE];
-	char* tmpBuff = new char[SMALL_BUFFER_SIZE]; // todo: jakos inaczej to rozwiazac, bo ja juz nie bede potrzebowal tej zmiennej po odczytaniu userow
-	uint8_t buffIndex = 0, tmpBuffIndex = 0;
-
-	eeprom_read_block(buffor, stringUsers, sizeof(stringUsers));
-
-	for(char* serial = buffor; *serial; ++serial) {
-		if(*serial == ';') {
-			tmpBuff[tmpBuffIndex++] = '\0';
-
-			users[usersIndex++] = new User(tmpBuff);
-
-			tmpBuffIndex = 0;
-		} else {
-			tmpBuff[tmpBuffIndex++] = *serial;
-		}
-	}
-
-	delete tmpBuff; // czy nie trzeba przypadkiem delete []tempBuff
-
-	//todo: zczytanie z pamieci EEPROM zserializowanych userow i zapisanie ich do tablicy
+	//todo: do usuniecia gdzy zadzia³a eeprom
 	users[usersIndex++] = new User();
 	(users[usersIndex - 1])->setCode("5555");
-	(users[usersIndex - 1])->setName("Kubiszon");
+	(users[usersIndex - 1])->setName("Kuba");
 
     while (1) {
 		if(state == WAIT) { // wait for user interaction
@@ -108,29 +92,25 @@ int main(void)
 							mainMenu->setChoose(mainMenu->getField());
 
 							if(mainMenu->getChoose() == ADD_USER && buffIndex == MAX_CODE_LENGTH) {
-								/*
-									todo: wprowadzenie oraz sprawdzenie unikalnosci kodu i zapisanie do eeprom usera
-								*/
+								for(int i = 0; i < usersIndex; i++) {
+									if(!strcmp(users[i]->getCode(), buffor)) {
+										// always clear buffor after entered action
+										buffIndex = 0;
+
+										//todo: display error with same code
+
+										state = DISPLAY;
+										break;
+									}
+								}
 
 								User *newUser = new User();
 								users[usersIndex++] = newUser;
 
 								newUser->setCode(buffor);
-								newUser->setName("oczek");
+								newUser->setName("BB");
 
-								for(int i = 0; i < usersIndex; i++) {
-									char serializedUser[SMALL_BUFFER_SIZE];
-
-									users[i]->toString(serializedUser);
-
-									strcat(buffor, serializedUser);
-									strcat(buffor, ";");
-								}
-
-								eeprom_write_block(buffor, stringUsers, sizeof(buffor));
-
-								LCD_Clear();
-								LCD_WriteText(newUser->getName());
+								writeUsersToEeprom();
 							} else if(mainMenu->getChoose() == LOGOUT) {
 								loggedUser->logout();
 								mainMenu->reset();
@@ -180,8 +160,6 @@ int main(void)
 								buffor[buffIndex++] = key;
 							}
 
-							send("test uasrt");
-
 							buffor[buffIndex] = '\0';
 					}
 				}
@@ -230,4 +208,41 @@ int main(void)
 			}
 		}
 	}
+}
+
+void readUsersFromEeprom() {
+	char buffor[SMALL_BUFFER_SIZE];
+	char tmpBuff[SMALL_BUFFER_SIZE];
+	uint8_t buffIndex = 0, tmpBuffIndex = 0;
+
+	eeprom_read_block(buffor, stringUsers, sizeof(stringUsers));
+
+	for(char* serial = buffor; *serial; ++serial) {
+		if(*serial == ';') {
+			tmpBuff[tmpBuffIndex++] = '\0';
+
+			users[usersIndex++] = new User(tmpBuff);
+
+			tmpBuffIndex = 0;
+			} else {
+			tmpBuff[tmpBuffIndex++] = *serial;
+		}
+	}
+}
+
+void writeUsersToEeprom() {
+	char buffor[SMALL_BUFFER_SIZE];
+	uint8_t buffIndex = 0;
+
+	for(int i = 0; i < usersIndex; i++) {
+		char serializedUser[SMALL_BUFFER_SIZE];
+		serializedUser[0] = '\0';
+
+		users[i]->toString(serializedUser);
+
+		strcat(buffor, serializedUser);
+		strcat(buffor, ";");
+	}
+
+	eeprom_write_block(buffor, stringUsers, sizeof(buffor));
 }
