@@ -12,11 +12,6 @@
 #include "Keyboard.h"
 #include "Menu.h"
 
-enum States {
-	DISPLAY,
-	WAIT
-};
-
 EEMEM char stringUsers[SMALL_BUFFER_SIZE	];
 
 User* users[MAX_NUM_OF_USERS];
@@ -36,9 +31,11 @@ int main(void)
 	Keyboard *keyboard = new Keyboard(&DDRC, &PORTC, &PINC);
 	States state = DISPLAY;
 	Menu *mainMenu = new Menu();
+	Info info = NONE;
 
 	char buffor[SMALL_BUFFER_SIZE];
 	uint8_t buffIndex = 0;
+
 
 	LCD_Initalize();
 
@@ -57,6 +54,7 @@ int main(void)
 	users[usersIndex++] = new User();
 	(users[usersIndex - 1])->setCode("5555");
 	(users[usersIndex - 1])->setName("Kuba");
+	(users[usersIndex - 1])->setRole(SUPER_ADMIN);
 
     while (1) {
 		if(state == WAIT) { // wait for user interaction
@@ -78,8 +76,9 @@ int main(void)
 							break;
 
 						case BACK: // back in menu and cancel operation
-							if(mainMenu->getChoose() == NO_OPTIONS) { // you have not selected any menu fiels
+							if(mainMenu->getChoose() == NO_OPTIONS) { // you have not selected any menu fields
 								loggedUser->logout();
+								loggedUser = NULL;
 							}
 							else {
 								mainMenu->setChoose(NO_OPTIONS);
@@ -91,28 +90,47 @@ int main(void)
 						case ENTER: // go to in or apply operation
 							mainMenu->setChoose(mainMenu->getField());
 
-							if(mainMenu->getChoose() == ADD_USER && buffIndex == MAX_CODE_LENGTH) {
-								for(int i = 0; i < usersIndex; i++) {
-									if(!strcmp(users[i]->getCode(), buffor)) {
-										// always clear buffor after entered action
+							if(mainMenu->getChoose() == ADD_USER) {
+								if(loggedUser->getRole() == SUPER_ADMIN) {
+									if(buffIndex == MAX_CODE_LENGTH) {
+										for(int i = 0; i < usersIndex; i++) {
+											if(!strcmp(users[i]->getCode(), buffor)) {
+												// always clear buffor after entered action
+												buffIndex = 0;
+
+												info = SAME_CODE;
+												state = ALERT;
+												break;
+											}
+										}
+
+										if(state == ALERT)
+											break;
+
+										User *newUser = new User();
+										users[usersIndex++] = newUser;
+
+										newUser->setCode(buffor);
+										newUser->setName("Nowy");
+
+										//writeUsersToEeprom();
+
 										buffIndex = 0;
 
-										//todo: display error with same code
-
-										state = DISPLAY;
+										info = NEW_USER;
+										state = ALERT;
 										break;
 									}
+								} else {
+									mainMenu->reset();
+
+									info = ACCESS_DENIED;
+									state = ALERT;
+									break;
 								}
-
-								User *newUser = new User();
-								users[usersIndex++] = newUser;
-
-								newUser->setCode(buffor);
-								newUser->setName("BB");
-
-								writeUsersToEeprom();
 							} else if(mainMenu->getChoose() == LOGOUT) {
 								loggedUser->logout();
+								loggedUser = NULL;
 								mainMenu->reset();
 							}
 
@@ -143,15 +161,21 @@ int main(void)
 							state = DISPLAY;
 							break;
 
-						case ENTER:
+						case ENTER: // loggin
 							for(int i = 0; i < usersIndex; i++) {
 								if(users[i]->login(buffor)) {
 									loggedUser = users[i];
 								}
 							}
 
+							if(loggedUser != NULL) {
+								state = DISPLAY;
+							} else {
+								info = BAD_CODE;
+								state = ALERT;
+							}
+
 							buffIndex = 0;
-							state = DISPLAY;
 							break;
 
 						default:
@@ -175,7 +199,6 @@ int main(void)
 
 					LCD_WriteText(txt);
 					LCD_GoTo(0, 1);
-					//LCD_WriteText(static_cast<char>(mainMenu.pos + 48));
 					LCD_WriteText(mainMenu->getLang());
 				} else if(mainMenu->getChoose() == ADD_USER) {
 					char txt[200];
@@ -197,15 +220,38 @@ int main(void)
 				LCD_Home();
 				LCD_WriteText("PIN:"); //todo: datatime display
 				LCD_GoTo(0, 1);
-				//char txt[200];
-				//sprintf(txt, "%d %d %d", sizeof(User), sizeof(Keyboard) ,sizeof(Door));
-				//LCD_WriteText(txt);
 
 				PORTB |= 1 << LED_RED;
 				PORTB &= ~(1 << LED_GREEN);
 
 				state = WAIT;
 			}
+		} else if(state == ALERT) {
+			LCD_Clear();
+			LCD_Home();
+
+			if(info == BAD_CODE) {
+				LCD_WriteText("ERROR:");
+				LCD_GoTo(0, 1);
+				LCD_WriteText("Zly pin");
+			} else if(info == SAME_CODE) {
+				LCD_WriteText("ERROR:");
+				LCD_GoTo(0, 1);
+				LCD_WriteText("Kod juz istnieje");
+			} else if(info == ACCESS_DENIED) {
+				LCD_WriteText("ERROR:");
+				LCD_GoTo(0, 1);
+				LCD_WriteText("Brak dostepu");
+			} else if(info == NEW_USER) {
+				LCD_WriteText("INFO:");
+				LCD_GoTo(0, 1);
+				LCD_WriteText("User dodany");
+			} else {
+				LCD_WriteText("Nieznany");
+			}
+
+			_delay_ms(3000);
+			state = DISPLAY;
 		}
 	}
 }

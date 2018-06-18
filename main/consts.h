@@ -14,10 +14,10 @@
 /**
  * Keyboard
  */
- #define UP 'A'
- #define DOWN 'B'
- #define BACK 'C'
- #define ENTER 'D'
+#define UP 'A'
+#define DOWN 'B'
+#define BACK 'C'
+#define ENTER 'D'
 
 /**
  * Sizes
@@ -27,9 +27,25 @@
 #define MAX_NUM_OF_USERS 10
 
 /**
- * Validator
+ * Validators
  */
 #define MAX_NAME_LENGTH 16
 #define MAX_CODE_LENGTH 4
+
+/**
+ * Types
+ */
+enum States {
+	DISPLAY,
+	WAIT,
+	ALERT
+};
+enum Info {
+	NONE,
+	BAD_CODE,
+	SAME_CODE,
+	ACCESS_DENIED,
+	NEW_USER
+};
 
 #endif
