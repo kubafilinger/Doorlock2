@@ -3,21 +3,21 @@
 #include <stdlib.h>
 #include <string.h>
 #include "helpers.h"
+#include "HD44780.h"
 
 User::User()
 {
 	this->id = 1;
-	this->name = "Kubas";
-	this->code = "4321";
+	setName("Name");
+	setCode("4321");
 	this->logged = 0;
 	this->role = USER;
 }
 
 /**
  * Constructor
- * Validation buffor size and name, code max length was omitted, becouse these are things read from EEPROM and their correctness has already been confirmed before
  *
- * @param char *
+ * @param char* serial
  */
 User::User(char *serial) {
 	char buffor[SMALL_BUFFER_SIZE];
@@ -35,7 +35,8 @@ User::User(char *serial) {
 					break;
 
 				case 1:
-					this->name = stringCopy(buffor);
+					//this->name = "Bambo";
+					this->setName(buffor);
 					break;
 
 				case 2:
@@ -43,7 +44,8 @@ User::User(char *serial) {
 					break;
 
 				case 3:
-					this->code = stringCopy(buffor);
+					this->code = "5555";
+					//this->setCode(buffor);
 					break;
 			}
 
@@ -56,17 +58,15 @@ User::User(char *serial) {
 
 User::~User()
 {
-// free name
-// free code
-// free others....
+	delete[] this->name;
+	delete[] this->code;
 }
 
 /**
- * @param code
+ * @param char* code
  * @return int
  */
-int User::login(char *code) {
-	//todo: tutaj byla zmiana zobaczyc czy dziala ok
+int User::login(char* code) {
 	if(!strcmp(code, this->code))
 		this->logged = 1;
 
@@ -77,39 +77,34 @@ void User::logout() {
 	this->logged = 0;
 }
 
-void User::remove() {
-
-}
-
 /**
- * @param name
+ * @param char* name
  */
-void User::setName(char *name) {
-	//todo:
-	//validate name?
-
-	this->name = name;
+void User::setName(char* name) {
+	this->name = new char[strlen(name) + 1];
+	strcpy(this->name, name);
 }
 
 /**
  * @return char*
  */
-char *User::getName() {
+char* User::getName() {
 	return this->name;
 }
 
 /**
- * @return char*
+ * @param char* code
  */
-char *User::getCode() {
-	return this->code;
+void User::setCode(char* code) {
+	this->code = new char[strlen(code) + 1];
+	strcpy(this->code, code);
 }
 
 /**
- * @param code
+ * @return char*
  */
-void User::setCode(char *code) {
-	this->code = code;
+char* User::getCode() {
+	return this->code;
 }
 
 /**
@@ -119,11 +114,17 @@ int User::isLogged() {
 	return this->logged;
 }
 
+/**
+ * @return Roles
+ */
 Roles User::getRole() {
 	return this->role;
 }
 
-char *User::getStringRole() {
+/**
+ * @return char*
+ */
+char* User::getStringRole() {
 	char* result;
 
 	switch(this->role) {
@@ -140,7 +141,10 @@ char *User::getStringRole() {
 	return result;
 }
 
-void User::setStringRole(char *stringRole) {
+/**
+ * @param char* stringRole
+ */
+void User::setStringRole(char* stringRole) {
 	if(!strcmp(stringRole, "USER"))
 		this->role = USER;
 	else if(!strcmp(stringRole, "SUPER_ADMIN"))
@@ -149,21 +153,27 @@ void User::setStringRole(char *stringRole) {
 		this->role = USER;
 }
 
+/**
+ * @param Roles role
+ */
 void User::setRole(Roles role) {
 	this->role = role;
 }
 
-void User::save() {
-
-}
-
-char *User::toString(char *txt) {
+/**
+ * @param char* txt
+ * @return char*
+ */
+char* User::toString(char* txt) {
 
 	sprintf(txt, "%d,%s,%s,%s,\0", this->id, this->name, this->getStringRole(), this->code);
 
 	return txt;
 }
 
+/**
+ * @return int
+ */
 int User::getId() {
 	return this->id;
 }

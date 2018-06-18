@@ -20,7 +20,6 @@ class User
 	~User();
 	int login(char *);
 	void logout();
-	void remove();
 	void setName(char *);
 	char *getName();
 	char *getCode();
@@ -30,7 +29,6 @@ class User
 	char *getStringRole();
 	void setStringRole(char *);
 	void setRole(Roles);
-	void save();
 	char *toString(char *);
 	int getId();
 };
