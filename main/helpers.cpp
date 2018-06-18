@@ -1,30 +1,35 @@
 #include "helpers.h"
 
+/**
+ * @param size_t size
+ * @return
+ */
 void * operator new(size_t size)
 {
 	return malloc(size);
 }
 
+/**
+ * @param size_t size
+ * @return
+ */
 void * operator new[](size_t size)
 {
 	return malloc(size);
 }
 
+/**
+ * @param void* ptr
+ */
 void operator delete(void * ptr)
 {
-	(ptr);
+	free(ptr);
 }
 
-char * stringCopy(char *txt) {
-	char *copy = new char[SMALL_BUFFER_SIZE]();
-	int index = 0;
-
-	for(txt; *txt; ++txt) {
-		if(index >= SMALL_BUFFER_SIZE)
-			break;
-
-		copy[index++] = *txt;
-	}
-
-	return copy;
+/**
+ * @param void* ptr
+ */
+void operator delete[](void * ptr)
+{
+	free(ptr);
 }

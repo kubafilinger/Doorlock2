@@ -1,6 +1,9 @@
 #include "Door.h"
 
-Door::Door(Servo *servo)
+/**
+ * @param servo
+ */
+Door::Door(Servo* servo)
 {
 	this->servo = servo;
 	this->close();
@@ -20,10 +23,16 @@ void Door::close() {
 	this->lock = true;
 }
 
+/**
+ * @return bool
+ */
 bool Door::getState() {
 	return this->state;
 }
 
+/**
+ * @return bool
+ */
 bool Door::getLock() {
 	return this->lock;
 }

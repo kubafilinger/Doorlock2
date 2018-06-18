@@ -18,6 +18,9 @@ void Servo::move(float position) {
 	
 }
 
+/**
+ * @return float
+ */
 float Servo::getPosition() {
 	return this->position;
 }
