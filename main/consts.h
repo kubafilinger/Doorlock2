@@ -45,7 +45,8 @@ enum Info {
 	BAD_CODE,
 	SAME_CODE,
 	ACCESS_DENIED,
-	NEW_USER
+	USER_ADDED,
+	CODE_CHANGED
 };
 
 #endif

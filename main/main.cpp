@@ -117,7 +117,7 @@ int main(void)
 
 										buffIndex = 0;
 
-										info = NEW_USER;
+										info = USER_ADDED;
 										state = ALERT;
 										break;
 									}
@@ -132,6 +132,31 @@ int main(void)
 								loggedUser->logout();
 								loggedUser = NULL;
 								mainMenu->reset();
+							} else if(mainMenu->getChoose() == CHANGE_CODE) {
+								if(buffIndex == MAX_CODE_LENGTH) {
+									for(int i = 0; i < usersIndex; i++) {
+										if(!strcmp(users[i]->getCode(), buffor)) {
+											buffIndex = 0;
+
+											info = SAME_CODE;
+											state = ALERT;
+											break;
+										}
+									}
+
+									if(state == ALERT)
+										break;
+
+									loggedUser->setCode(buffor);
+
+									//writeUsersToEeprom();
+
+									buffIndex = 0;
+
+									info = CODE_CHANGED;
+									state = ALERT;
+									break;
+								}
 							}
 
 							// always clear buffor after entered action
@@ -141,7 +166,7 @@ int main(void)
 							break;
 
 						default:
-							if(mainMenu->getChoose() == ADD_USER) {
+							if(mainMenu->getChoose() == ADD_USER || mainMenu->getChoose() == CHANGE_CODE) {
 								if(buffIndex < MAX_CODE_LENGTH) {
 									LCD_WriteData('*');
 									buffor[buffIndex++] = key;
@@ -207,6 +232,13 @@ int main(void)
 					LCD_WriteText("<- Dodaj usera");
 					LCD_GoTo(0, 1);
 					LCD_WriteText("Kod:");
+				} else if(mainMenu->getChoose() == CHANGE_CODE) {
+					char txt[200];
+					sprintf(txt, "<- %s", mainMenu->getLang());
+
+					LCD_WriteText("<- Zmien kod");
+					LCD_GoTo(0, 1);
+					LCD_WriteText("Now kod:");
 				}
 
 				PORTB |= 1 << LED_GREEN;
@@ -242,10 +274,14 @@ int main(void)
 				LCD_WriteText("ERROR:");
 				LCD_GoTo(0, 1);
 				LCD_WriteText("Brak dostepu");
-			} else if(info == NEW_USER) {
+			} else if(info == USER_ADDED) {
 				LCD_WriteText("INFO:");
 				LCD_GoTo(0, 1);
 				LCD_WriteText("User dodany");
+			} else if(info == CODE_CHANGED) {
+				LCD_WriteText("INFO:");
+				LCD_GoTo(0, 1);
+				LCD_WriteText("Kod zmieniony");
 			} else {
 				LCD_WriteText("Nieznany");
 			}
