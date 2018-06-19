@@ -33,6 +33,12 @@
 #define MAX_CODE_LENGTH 4
 
 /**
+ * Servo
+ */
+#define SERVO_MIN_POS 100
+#define SERVO_MAX_POS 200
+
+/**
  * Types
  */
 enum States {

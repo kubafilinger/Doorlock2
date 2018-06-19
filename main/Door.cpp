@@ -1,6 +1,8 @@
 #include "Door.h"
 
 /**
+ * Constructor
+ *
  * @param servo
  */
 Door::Door(Servo* servo)
@@ -9,6 +11,9 @@ Door::Door(Servo* servo)
 	this->close();
 }
 
+/**
+ * Destructor
+ */
 Door::~Door()
 {
 }

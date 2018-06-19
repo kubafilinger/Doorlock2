@@ -12,7 +12,7 @@
 #include "Keyboard.h"
 #include "Menu.h"
 
-EEMEM char stringUsers[SMALL_BUFFER_SIZE	];
+EEMEM char stringUsers[SMALL_BUFFER_SIZE];
 
 User* users[MAX_NUM_OF_USERS];
 uint8_t usersIndex = 0;
@@ -26,7 +26,7 @@ int main(void)
 	PORTB = ~((1 << LED_RED) | (1 << LED_GREEN) | (1 << SERVO_PIN));
 
 	User *loggedUser = NULL;
-	Servo *servo = new Servo(SERVO_PIN);
+	Servo *servo = new Servo(&DDRB, &PORTB, SERVO_PIN);
 	Door *door = new Door(servo);
 	Keyboard *keyboard = new Keyboard(&DDRC, &PORTC, &PINC);
 	States state = DISPLAY;
@@ -36,11 +36,10 @@ int main(void)
 	char buffor[SMALL_BUFFER_SIZE];
 	uint8_t buffIndex = 0;
 
-
 	LCD_Initalize();
 
-	// test otwierania drzwi
-	//door->open();
+	door->close();
+
 	/*
 	if(servo->getPosition() == 160)
 		PORTB |= (1 << LED_GREEN);
@@ -79,6 +78,7 @@ int main(void)
 							if(mainMenu->getChoose() == NO_OPTIONS) { // you have not selected any menu fields
 								loggedUser->logout();
 								loggedUser = NULL;
+								door->close();
 							}
 							else {
 								mainMenu->setChoose(NO_OPTIONS);
@@ -131,6 +131,7 @@ int main(void)
 							} else if(mainMenu->getChoose() == LOGOUT) {
 								loggedUser->logout();
 								loggedUser = NULL;
+								door->close();
 								mainMenu->reset();
 							} else if(mainMenu->getChoose() == CHANGE_CODE) {
 								if(buffIndex == MAX_CODE_LENGTH) {
@@ -190,6 +191,7 @@ int main(void)
 							for(int i = 0; i < usersIndex; i++) {
 								if(users[i]->login(buffor)) {
 									loggedUser = users[i];
+									door->open();
 								}
 							}
 
