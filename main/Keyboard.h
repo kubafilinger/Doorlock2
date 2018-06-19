@@ -1,14 +1,17 @@
 #ifndef __KEYBOARD_H__
 #define __KEYBOARD_H__
+
+#ifndef F_CPU
 #define F_CPU 8000000L
+#endif
 
 #include <util/delay.h>
 
 class Keyboard
 {
-	volatile uint8_t *ddr;
-	volatile uint8_t *port;
-	volatile uint8_t *pin;
+	volatile uint8_t* ddr;
+	volatile uint8_t* port;
+	volatile uint8_t* pin;
 	char key;
 	char keyboard[4][4] = {
 		{'1', '2', '3', 'A'},
@@ -25,4 +28,4 @@ public:
 	void setKey(char);
 };
 
-#endif __KEYBOARD_H__
+#endif //__KEYBOARD_H__
